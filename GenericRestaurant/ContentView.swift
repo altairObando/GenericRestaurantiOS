@@ -10,57 +10,42 @@ import SwiftData
 
 struct ContentView: View {
     @Environment(\.modelContext) private var modelContext
-    @Query private var items: [Item]
-
+    @State private var isLogged: Bool = false;
+    @State private var checkingLoggin: Bool = true;
     var body: some View {
-        NavigationSplitView {
-            List {
-                ForEach(items) { item in
-                    NavigationLink {
-                        Text("Item at \(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))")
-                    } label: {
-                        Text(item.timestamp, format: Date.FormatStyle(date: .numeric, time: .standard))
+        VStack(alignment: .center, spacing: 10 ) {
+            if(checkingLoggin){
+                ProgressView()
+                    .transition(.opacity)
+            }else {
+                if( !isLogged ){
+                    LoginView(isLoggedIn: $isLogged)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }else{
+                    HomeView(isLoggedIn: $isLogged)
+                        .transition(.move(edge: .top).combined(with: .opacity))
+                }
+            }
+        }
+        .animation(.easeInOut(duration: 0.4), value: checkingLoggin)
+        .animation(.easeInOut(duration: 0.4), value: isLogged)
+        .onAppear(perform: checkLogin)
+    }    
+    func checkLogin(){
+        // Check if already saved a token
+        APIService.shared.refreshAccessToken{ result in
+            DispatchQueue.main.async {
+                withAnimation{
+                    isLogged = result
+                    // Clear previous data
+                    let sessions = try? modelContext.fetch(FetchDescriptor<SessionModel>())
+                    sessions?.forEach { modelContext.delete($0) }
+                    if !result {
+                        APIService.shared.logout(context: modelContext)
                     }
+                    checkingLoggin = false
                 }
-                .onDelete(perform: deleteItems)
-            }
-#if os(macOS)
-            .navigationSplitViewColumnWidth(min: 180, ideal: 200)
-#endif
-            .toolbar {
-#if os(iOS)
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    EditButton()
-                }
-#endif
-                ToolbarItem {
-                    Button(action: addItem) {
-                        Label("Add Item", systemImage: "plus")
-                    }
-                }
-            }
-        } detail: {
-            Text("Select an item")
-        }
-    }
-
-    private func addItem() {
-        withAnimation {
-            let newItem = Item(timestamp: Date())
-            modelContext.insert(newItem)
-        }
-    }
-
-    private func deleteItems(offsets: IndexSet) {
-        withAnimation {
-            for index in offsets {
-                modelContext.delete(items[index])
             }
         }
     }
-}
-
-#Preview {
-    ContentView()
-        .modelContainer(for: Item.self, inMemory: true)
 }
