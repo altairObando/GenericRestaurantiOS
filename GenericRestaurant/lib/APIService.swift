@@ -113,6 +113,7 @@ public class APIService {
                 }
             } catch {
                 DispatchQueue.main.async {
+                    print(error)
                     completion(.failure(error))
                 }
             }
@@ -218,8 +219,28 @@ public class APIService {
         }
         
     }
-    
-
+    func getOrders(completion: @escaping(Result<PaginatedResult<[Order]>, Error>) -> Void){
+        let url = self.apiURL.appendingPathComponent("orders/");
+        self.request(url: url){ (result: Result<PaginatedResult<[Order]>, Error>) in
+            switch result {
+                case .success(let orders):
+                    completion(.success(orders))
+                case .failure(let error):
+                    completion(.failure(error))
+            }
+        }
+    }
+    func getOrderById(_ id : Int, completion: @escaping(Result<PaginatedResult<Order>, Error>) -> Void){
+        let url = self.apiURL.appendingPathComponent("orders/\(id)/");
+        self.request(url: url){ (result: Result<PaginatedResult<Order>, Error>) in
+            switch result {
+                case .success(let orders):
+                    completion(.success(orders))
+                case .failure(let error):
+                    completion(.failure(error))
+            }
+        }
+    }
 }
 
 // MARK: - Errores comunes

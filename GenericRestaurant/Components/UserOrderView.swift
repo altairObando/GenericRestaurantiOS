@@ -7,20 +7,20 @@
 
 
 import SwiftUI
-import SwiftData
 
 struct UserOrderView: View {
     @Binding var isLoggedIn: Bool
     var body: some View {
         TabView {
-            Text("Órdenes en curso")
-                .tabItem {
-                    Label("Órdenes", systemImage: "list.bullet")
-                }
-            Text("Historial")
-                .tabItem {
-                    Label("Historial", systemImage: "clock")
-                }
+            OrderList(isLoggedIn: $isLoggedIn).tabItem {
+                Label("Orders", systemImage: "list.bullet")
+            }
+            Text("Order History").tabItem {
+                Label("History", systemImage: "clock")
+            }
+            Text("Profile").tabItem {
+                Label("Profile", systemImage: "person")
+            }
         }
     }
 }

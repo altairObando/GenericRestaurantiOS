@@ -56,7 +56,9 @@ struct HomeView: View {
                 AdminDashboardView(isLoggedIn: $isLoggedIn)
             }
             .navigationDestination(isPresented: $navigateToUser){
-                UserOrderView(isLoggedIn: $isLoggedIn)
+                NavigationStack{
+                    UserOrderView(isLoggedIn: $isLoggedIn)
+                }
             }
         }
         .onAppear{

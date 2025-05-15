@@ -7,7 +7,7 @@
 import Foundation
 struct InitialConfig: Codable {
     var user: User
-    var role: [String]?
+    var role: String?
     var restaurants: [Restaurant]?
     var locations: [Location]?
     var menus: [String]?

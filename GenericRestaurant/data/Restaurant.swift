@@ -13,5 +13,5 @@ struct Restaurant: Codable, Identifiable {
     var locations: [Location]?
     var owner, name, description, address: String?
     var phone: String?
-    var tags: [String]?
+    var tags: String?
 }
