@@ -107,6 +107,7 @@ public class APIService {
                 }
             }
             do {
+                
                 let decoded = try JSONDecoder().decode(T.self, from: data)
                 DispatchQueue.main.async {
                     completion(.success(decoded))
@@ -230,9 +231,10 @@ public class APIService {
             }
         }
     }
-    func getOrderById(_ id : Int, completion: @escaping(Result<PaginatedResult<Order>, Error>) -> Void){
-        let url = self.apiURL.appendingPathComponent("orders/\(id)/");
-        self.request(url: url){ (result: Result<PaginatedResult<Order>, Error>) in
+    func getOrdersByRestaurantId(_ id: Int, completion: @escaping(Result<PaginatedResult<[Order]>, Error>) -> Void){
+        var url = self.apiURL.appendingPathComponent("orders/");
+        url.append(queryItems: [URLQueryItem(name:"restaurantId", value: String(id))])
+        self.request(url: url){ (result: Result<PaginatedResult<[Order]>, Error>) in
             switch result {
                 case .success(let orders):
                     completion(.success(orders))
@@ -241,6 +243,118 @@ public class APIService {
             }
         }
     }
+    func getOrdersByStatus(restaurantId: Int, status: String = "ACTIVE", completion: @escaping(Result<PaginatedResult<[Order]>, Error>) -> Void){
+        var url = self.apiURL.appendingPathComponent("orders/by_status/");
+        url
+            .append(
+                queryItems: [
+                    URLQueryItem(name: "restaurantId", value: String(restaurantId)),
+                    URLQueryItem(name: "status", value: status.uppercased())
+                ]
+            )
+        self.request(url: url){ (result: Result<PaginatedResult<[Order]>, Error>) in
+            switch result {
+                case .success(let orders):
+                    completion(.success(orders))
+                case .failure(let error):
+                    completion(.failure(error))
+            }
+        }
+    }
+    func getOrderById(_ id : Int, completion: @escaping(Result<Order, Error>) -> Void){
+        let url = self.apiURL.appendingPathComponent("orders/\(id)/");
+        self.request(url: url){ (result: Result<Order, Error>) in
+            switch result {
+                case .success(let orders):
+                    completion(.success(orders))
+                case .failure(let error):
+                    completion(.failure(error))
+            }
+        }
+    }
+    // MARK: - async Methods
+    // MARK: - Versión async/await del método request
+    func requestAsync<T: Decodable>(
+        url: URL,
+        method: String = "GET",
+        body: Data? = nil,
+        addAuthHeader: Bool = true,
+        headers: [String: String] = [:]
+    ) async throws -> T {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.httpBody = body
+
+        var finalHeaders = headers
+        if addAuthHeader, let token = self.accessToken {
+            finalHeaders["Authorization"] = "Bearer \(token)"
+        }
+
+        finalHeaders.forEach { key, value in
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        // Token expirado
+        if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 401 {
+            let refreshed = try await refreshAccessTokenAsync()
+            if refreshed {
+                return try await requestAsync(
+                    url: url,
+                    method: method,
+                    body: body,
+                    addAuthHeader: addAuthHeader,
+                    headers: headers
+                )
+            } else {
+                self.onUnauthorized?()
+                throw APIError.unauthorized
+            }
+        }
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw APIError.unknown
+        }
+
+        if httpResponse.statusCode == 400 {
+            if let apiError = try? JSONDecoder().decode(APIErrorResponse.self, from: data) {
+                throw apiError
+            } else {
+                throw URLError(.badServerResponse)
+            }
+        }
+
+        do {
+            return try JSONDecoder().decode(T.self, from: data)
+        } catch {
+            print("Decoding error:", error)
+            throw error
+        }
+    }
+    func refreshAccessTokenAsync() async throws -> Bool {
+        guard let refreshToken = self.refreshToken else {
+            return false
+        }
+
+        var request = URLRequest(url: baseURL.appendingPathComponent("api/token/refresh/"))
+        request.httpMethod = "POST"
+        request.addValue("application/json", forHTTPHeaderField: "Content-Type")
+        let body = ["refresh": refreshToken]
+        request.httpBody = try? JSONEncoder().encode(body)
+
+        let (data, _) = try await URLSession.shared.data(for: request)
+
+        guard let json = try? JSONSerialization.jsonObject(with: data, options: []) as? [String: Any],
+              let newAccess = json["access"] as? String else {
+            return false
+        }
+
+        let newRefresh = json["refresh"] as? String ?? refreshToken
+        self.saveTokens(access: newAccess, refresh: newRefresh)
+        return true
+    }
+
 }
 
 // MARK: - Errores comunes

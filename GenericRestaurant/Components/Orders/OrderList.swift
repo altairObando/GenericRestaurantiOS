@@ -7,21 +7,14 @@
 
 import SwiftUI
 struct OrderList: View {
-    @Binding var isLoggedIn: Bool
+    @Binding var isLoggedIn: Bool;
+    @Binding var openNewOrder: Bool;
+    @Binding var restaurant: Restaurant;
     @State private var orders: [Order] = []
     @State private var isLoading = false
     
     var body: some View {
         VStack(alignment: .leading){
-            HStack{
-                Text("My Orders").font(.headline)
-                Spacer()
-                Button{
-                    print("Create Order")
-                } label: {
-                    Image(systemName: "plus")
-                }.buttonStyle(.borderless)
-            }.padding()
             if isLoading {
                 ProgressView("Loading orders...")
             } else if orders.isEmpty {
@@ -33,7 +26,9 @@ struct OrderList: View {
                 ScrollView {
                     LazyVStack(spacing: 12) {
                         ForEach(orders, id: \.id) { order in
-                            OrderCardView(order: order)
+                            NavigationLink(destination: OrderDetailView(orderId: order.id)){
+                                OrderCardView(order: order)
+                            }.buttonStyle(PlainButtonStyle())
                         }
                     }.padding()
                 }.refreshable {
@@ -41,6 +36,7 @@ struct OrderList: View {
                 }
             }
         }
+        .padding()
         .onAppear{
             if orders.isEmpty {
                 fetchOrders()
@@ -49,10 +45,10 @@ struct OrderList: View {
     }
     func fetchOrders(){
         isLoading = true;
-        APIService.shared.getOrders(){ result in
+        APIService.shared.getOrdersByStatus(restaurantId: restaurant.id, status: "ACTIVE" ){ result in
             switch result {
-                case .success(let paged):
-                    self.orders = paged.results
+                case .success(let paginated):
+                    self.orders = paginated.results;
                 case .failure:
                     print("Error fetching orders")
             }

@@ -14,6 +14,8 @@ struct Order: Codable {
     var orderStatus, createdAt, updatedAt: String?
     var taxes, subtotal, total: String?
     var restaurant, location, waiter: Int?
+    var waiterName: String
+    var locationName: String
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -22,5 +24,8 @@ struct Order: Codable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case subtotal, taxes, total, restaurant, location, waiter
+        case waiterName = "waiter_name"
+        case locationName = "location_name"
+        
     }
 }

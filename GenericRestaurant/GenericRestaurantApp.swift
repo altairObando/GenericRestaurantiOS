@@ -32,3 +32,20 @@ struct GenericRestaurantApp: App {
         .modelContainer(sharedModelContainer)
     }
 }
+
+func formatDate(_ isoString: String) -> String {
+    let formatter = ISO8601DateFormatter()
+    formatter.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+
+    guard let date = formatter.date(from: isoString) else {
+        return isoString
+    }
+
+    let displayFormatter = DateFormatter()
+    displayFormatter.dateStyle = .medium   // usa estilo del sistema para la fecha
+    displayFormatter.timeStyle = .short    // usa estilo del sistema para la hora
+    displayFormatter.locale = .current     // respeta configuración regional
+    displayFormatter.timeZone = .current   // usa zona horaria del dispositivo
+
+    return displayFormatter.string(from: date)
+}

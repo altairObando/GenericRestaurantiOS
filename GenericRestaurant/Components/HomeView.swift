@@ -16,7 +16,7 @@ struct HomeView: View {
     @Binding var isLoggedIn: Bool;
     @State private var appConfig: InitialConfig? = nil;
     @State private var showRoleSheet: Bool = false;
-    @State private var selectedRestaurant: Restaurant? = nil
+    @State private var selectedRestaurant: Restaurant = Restaurant(id: 0)
     @State private var navigateToAdmin = false
     @State private var navigateToUser = false
     
@@ -51,14 +51,20 @@ struct HomeView: View {
                     }
                 }
             }
+            .toolbar{
+                Button{
+                    APIService.shared.logout(context: context)
+                    isLoggedIn = false;
+                }label:{
+                    Image(systemName: "xmark.circle")
+                }.buttonStyle(.borderless)
+            }
             .padding()
             .navigationDestination( isPresented: $navigateToAdmin){
                 AdminDashboardView(isLoggedIn: $isLoggedIn)
             }
             .navigationDestination(isPresented: $navigateToUser){
-                NavigationStack{
-                    UserOrderView(isLoggedIn: $isLoggedIn)
-                }
+                UserOrderView(isLoggedIn: $isLoggedIn, restaurant: $selectedRestaurant)
             }
         }
         .onAppear{

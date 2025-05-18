@@ -7,7 +7,7 @@
 
 import Foundation
 struct PaginatedResult<T: Codable>: Codable{
-    var count: Int
+    var count: Int?
     var next: String?
     var previous: String?
     var results: T

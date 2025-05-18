@@ -14,6 +14,7 @@ struct OrderDetailsSet: Codable {
     var quantity: Int?
     var createdAt, updatedAt: String?
     var order, item: Int?
+    var productName: String
 
     enum CodingKeys: String, CodingKey {
         case id
@@ -22,5 +23,6 @@ struct OrderDetailsSet: Codable {
         case createdAt = "created_at"
         case updatedAt = "updated_at"
         case order, item
+        case productName = "product_name"
     }
 }

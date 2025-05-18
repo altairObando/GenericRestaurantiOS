@@ -9,7 +9,6 @@ import SwiftUI
 
 struct OrderCardView: View {
     var order: Order
-    @State private var isPressed: Bool = false
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -52,15 +51,6 @@ struct OrderCardView: View {
         .background(Color(.systemBackground))
         .cornerRadius(16)
         .shadow(radius: 2)
-        .scaleEffect(isPressed ? 0.96 : 1.0)
-        .animation(.spring(response: 0.3, dampingFraction: 0.5), value: isPressed)
-        .onTapGesture{
-            isPressed.toggle()
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                isPressed.toggle()
-            }
-        }
-        
     }
 
     // Status color mapping
@@ -73,17 +63,5 @@ struct OrderCardView: View {
             case "cancelled": return .red
             default: return .gray
         }
-    }
-
-    // Date formatting
-    func formatDate(_ isoString: String) -> String {
-        let formatter = ISO8601DateFormatter()
-        if let date = formatter.date(from: isoString) {
-            let displayFormatter = DateFormatter()
-            displayFormatter.dateStyle = .medium
-            displayFormatter.timeStyle = .short
-            return displayFormatter.string(from: date)
-        }
-        return isoString
     }
 }
