@@ -40,7 +40,7 @@ struct UserOrderView: View {
             
         }
         .navigationDestination(isPresented: $openNewOrder){
-            Text("New Order Form")
+            PricingList(restaurantId: $restaurant.id)
         }
     }
 }

@@ -8,78 +8,44 @@ import SwiftUI
 
 struct OrderDetailView: View {
     let orderId: Int
+    @State private var isEditing: Bool = false;
     @State private var order: Order?
     @State private var orderDetails: [OrderDetailsSet] = []
     @State private var selection: Set<Int> = []
-    @State private var loading: Bool = true
+    @State private var isLoading: Bool = true
     @State private var errMsg: String = String();
     @State private var isError: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            if loading{
+            if isLoading{
                 ProgressView()
             }
             if let order = order {
                 // Header
-                VStack(alignment: .leading, spacing: 4) {
-                    Text("Order #\(order.id)")
-                        .font(.title2)
-                        .bold()
-                    Text("Status: \(order.orderStatus?.capitalized ?? "Unknown")")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
+                DetailHeader(orderId: orderId, orderStatus: order.orderStatus ?? "Unknown" )
                 Divider()
                 // Info Section
-                VStack(alignment: .leading, spacing: 8) {
-                    HStack {
-                        Label("Location", systemImage: "mappin.and.ellipse")
-                        Spacer()
-                        Text(order.locationName)
-                    }
-                    HStack {
-                        Label("Waiter", systemImage: "person")
-                        Spacer()
-                        Text(order.waiterName)
-                    }
-                    HStack {
-                        Label("Created", systemImage: "calendar")
-                        Spacer()
-                        Text(formatDate(order.createdAt ?? String()))
-                    }
-                }
-                .font(.subheadline)
+                DetailInfo(locationName: order.locationName, waiterName: order.waiterName, creationDate: order.createdAt ?? String())
                 Divider()
                 // Items
-                Text("Items \((order.orderDetailsSet ?? []).count)")
-                    .font(.headline)
-                List(orderDetails, id: \.id, selection: $selection){ detail in
-                    VStack(alignment: .leading, spacing: 4) {
-                        HStack {
-                            Text(detail.productName)
-                                .font(.body)
-                            Spacer()
-                            Text("x\(detail.quantity ?? 0)")
-                                .foregroundColor(.gray)
-                        }
-                        HStack {
-                            Text("Unit: $\(detail.itemPrice ?? "0")")
-                            Spacer()
-                            Text("Total: $\(detail.total ?? "0")")
-                        }
-                        .font(.caption)
-                        .foregroundColor(.secondary)
-                    }.padding(.vertical, 8)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(Color(.systemBackground))
-                    .cornerRadius(12)
-                }
-                .frame(maxWidth: .infinity)
-                .listStyle(.plain)
+                DetailList(orderDetails: $orderDetails, selection: $selection, loading: $isLoading, isEditing: $isEditing)
                 Divider()
                 // Totals
                 VStack(alignment: .leading, spacing: 8) {
+                    if isEditing {
+                        HStack{
+                            Text("Selected: \(selection.count)")
+                                .fontWeight(.bold)
+                                .foregroundStyle(.red)
+                            Spacer()
+                            Button(String(), systemImage: "trash"){
+                                deleteSelectedItems()
+                            }.tint(.red)
+                            .disabled(selection.isEmpty)
+                        }.animation(.easeInOut(duration: 0.5), value: isEditing)
+                        Divider().animation(.easeInOut(duration: 0.5), value: isEditing)
+                    }
                     HStack {
                         Text("Subtotal")
                         Spacer()
@@ -100,22 +66,9 @@ struct OrderDetailView: View {
                 }
                 .padding(.top)
                 // Options
-                HStack(spacing: 16){
-                    Button{
-                        print("Cancel")
-                    } label:{
-                        FullWidthText(text: "CANCEL")
-                    }.buttonStyle(.borderedProminent)
-                        .tint(Color.red)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                    Button{
-                        print("Pay")
-                    } label:{
-                        FullWidthText(text: "PAY")
-                    }.buttonStyle(.borderedProminent)
-                        .tint(Color.green)
-                        .clipShape(RoundedRectangle(cornerRadius: 10))
-                }.padding(.horizontal)
+                if !isEditing{
+                    DetailOptions()
+                }
             }
         }
         .padding()
@@ -134,26 +87,27 @@ struct OrderDetailView: View {
             getOrderDetails()
         }
         .toolbar{
-            // Botón de edición para habilitar selección múltiple
-            ToolbarItem(placement: .navigationBarTrailing) {
-                EditButton()
-            }
-            // Botón de eliminar, visible solo si hay selección
-            ToolbarItem(placement: .navigationBarTrailing) {
-                if !selection.isEmpty {
-                    Button {
-                        deleteSelectedItems()
-                    } label: {
-                        Label("Delete", systemImage: "trash")
-                    }
+            if !isEditing {
+                // Botón de edición para habilitar selección múltiple
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button("", systemImage: "pencil"){
+                        isEditing.toggle()
+                    }.animation(.easeInOut, value: isEditing)
+                }
+                ToolbarItem(placement: .navigationBarTrailing){
+                    Button("", systemImage: "plus"){}.animation(.easeInOut, value: isEditing)
+                }
+            }else{
+                ToolbarItem(placement: .navigationBarTrailing){
+                    Button("Done"){ isEditing.toggle()}.animation(.easeInOut, value: isEditing)
                 }
             }
         }
-
     }
     func deleteSelectedItems (){
         Task{
             var successfullyDeleted : Set<Int> = []
+            isLoading.toggle()
             do{
                 for id in selection{
                     var url = APIService.shared.apiURL.appendingPathComponent( "orders/\(orderId)/remove_detail/" )
@@ -172,15 +126,17 @@ struct OrderDetailView: View {
                 }
                 // Limpia la selección
                 selection.removeAll();
+                isEditing.toggle()
                 if(!successfullyDeleted.isEmpty){
                     getOrderDetails()
                 }
+            }catch {
+                isLoading = false
             }
         }
     }
-
     func getOrderDetails(){
-        loading = true;
+        isLoading = true;
         APIService.shared.getOrderById( orderId ) { result in
             switch result {
                 case .success(let order):
@@ -190,7 +146,7 @@ struct OrderDetailView: View {
                     self.errMsg = error.localizedDescription
                     isError.toggle()
             }
-            loading.toggle();
+            isLoading.toggle();
         }
     }
 }

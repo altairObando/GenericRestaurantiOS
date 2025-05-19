@@ -354,7 +354,20 @@ public class APIService {
         self.saveTokens(access: newAccess, refresh: newRefresh)
         return true
     }
-
+    func getProductPricingAsync(_ restaurantId: Int, onlyValid: Int = 1, productName: String = String()) async throws -> PaginatedResult<[Pricing]> {
+        var url = self.apiURL.appendingPathComponent("pricing/");
+        url.append(
+            queryItems: [
+                URLQueryItem(name:"restaurantId", value: String(restaurantId)),
+                URLQueryItem(name:"onlyValid", value: String(onlyValid)),
+            ]
+        );
+        if !productName.isEmpty {
+            url.append(queryItems: [URLQueryItem(name:"productName", value: productName)])
+        }
+        let response : PaginatedResult<[Pricing]> = try await self.requestAsync(url: url);
+        return response
+    }
 }
 
 // MARK: - Errores comunes
