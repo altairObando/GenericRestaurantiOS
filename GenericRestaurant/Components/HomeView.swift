@@ -108,8 +108,7 @@ struct HomeView: View {
                 session.user = UserModel(from: authResponse.user)
                 session.profile = ProfileModel(from: authResponse.profile)
                 context.insert(session)
-                fetchAppConfig()
-                
+                fetchAppConfig()                
             case .failure(let error):
                     errorMessage = error.localizedDescription;
                     APIService.shared.clearTokens()

@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Location: Codable {
+struct Location: Codable, Identifiable {
     var id: Int
     var sublocations: [Location]?
     // location name

@@ -220,6 +220,7 @@ public class APIService {
         }
         
     }
+    // MARK: - ORDERS
     func getOrders(completion: @escaping(Result<PaginatedResult<[Order]>, Error>) -> Void){
         let url = self.apiURL.appendingPathComponent("orders/");
         self.request(url: url){ (result: Result<PaginatedResult<[Order]>, Error>) in
@@ -271,6 +272,19 @@ public class APIService {
                     completion(.failure(error))
             }
         }
+    }
+    func createOrder(restaurant: Int, location: Int ) async throws -> Order {
+        let url = self.apiURL.appendingPathComponent("orders/");
+        let orderDto: Order = .init(
+            id: 0,
+            orderStatus: "ACTIVE",
+            restaurant: restaurant,
+            location: location
+        );
+        let jsonData = try JSONEncoder().encode(orderDto)
+        let newOrder: Order = try await self.requestAsync(url: url, method: "POST", body: jsonData);
+        return newOrder
+        
     }
     // MARK: - async Methods
     // MARK: - Versión async/await del método request
@@ -354,6 +368,7 @@ public class APIService {
         self.saveTokens(access: newAccess, refresh: newRefresh)
         return true
     }
+    // MARK: - Products with price
     func getProductPricingAsync(_ restaurantId: Int, onlyValid: Int = 1, productName: String = String()) async throws -> PaginatedResult<[Pricing]> {
         var url = self.apiURL.appendingPathComponent("pricing/");
         url.append(
@@ -366,6 +381,13 @@ public class APIService {
             url.append(queryItems: [URLQueryItem(name:"productName", value: productName)])
         }
         let response : PaginatedResult<[Pricing]> = try await self.requestAsync(url: url);
+        return response
+    }
+    // MARK: - Available locaitons
+    func getAvailableLocaitons(_ restaurantId: Int) async throws -> [Location] {
+        var url = self.apiURL.appendingPathComponent("locations/available_locations/");
+        url.append(queryItems: [URLQueryItem(name:"restaurantId", value: String(restaurantId))])
+        let response: [Location] = try await self.requestAsync(url: url);
         return response
     }
 }

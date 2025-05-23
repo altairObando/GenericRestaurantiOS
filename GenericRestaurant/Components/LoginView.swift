@@ -8,7 +8,8 @@
 import SwiftUI
 import SwiftData
 struct LoginView: View {
-    @Environment(\.modelContext) private var modelContext
+    @Environment(\.modelContext) private var modelContext;
+    @FocusState private var focusedField: Field?
     @State private var username : String = String();
     @State private var password : String = String();
     @State private var isLoggin : Bool = false;
@@ -23,9 +24,17 @@ struct LoginView: View {
                 .textFieldStyle(.roundedBorder)
                 .keyboardType(.emailAddress)
                 .textInputAutocapitalization(.never)
+                .submitLabel(.next)
+                .focused($focusedField, equals: .username)
+                .onSubmit {
+                    focusedField = .password
+                }
+                
             SecureField("Password",  text: $password)
                 .textFieldStyle(.roundedBorder)
                 .textInputAutocapitalization(.never)
+                .submitLabel(.go)
+                .focused($focusedField, equals: .password)
                 .onSubmit{ doLogin() }
             Button(action: doLogin ){
                 if(isLoggin){
@@ -95,4 +104,9 @@ struct LoginView: View {
 }
 #Preview {
     LoginView(isLoggedIn: .constant(false))
+}
+
+enum Field: Hashable {
+    case username
+    case password
 }

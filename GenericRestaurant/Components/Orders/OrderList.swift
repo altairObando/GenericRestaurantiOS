@@ -8,7 +8,6 @@
 import SwiftUI
 struct OrderList: View {
     @Binding var isLoggedIn: Bool;
-    @Binding var openNewOrder: Bool;
     @Binding var restaurant: Restaurant;
     @State private var orders: [Order] = []
     @State private var isLoading = false

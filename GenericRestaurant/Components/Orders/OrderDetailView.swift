@@ -26,7 +26,7 @@ struct OrderDetailView: View {
                 DetailHeader(orderId: orderId, orderStatus: order.orderStatus ?? "Unknown" )
                 Divider()
                 // Info Section
-                DetailInfo(locationName: order.locationName, waiterName: order.waiterName, creationDate: order.createdAt ?? String())
+                DetailInfo(locationName: (order.locationName ?? String()), waiterName: (order.waiterName ?? String()), creationDate: order.createdAt ?? String())
                 Divider()
                 // Items
                 DetailList(orderDetails: $orderDetails, selection: $selection, loading: $isLoading, isEditing: $isEditing)

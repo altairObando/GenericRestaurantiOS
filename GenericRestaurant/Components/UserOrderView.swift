@@ -13,10 +13,13 @@ struct UserOrderView: View {
     @Binding var restaurant: Restaurant;
     enum Tab { case orders, history, settings }
     @State private var selectedTab: Tab = .orders
-    @State private var openNewOrder: Bool = false
+    @State private var showLocationSelect: Bool = false
+    @State private var showOrder: Bool = false;
+    @State private var newOrderId: Int = 0;
+    
     var body: some View {
         TabView(selection: $selectedTab ) {
-            OrderList(isLoggedIn: $isLoggedIn, openNewOrder: $openNewOrder, restaurant: $restaurant  ).tabItem {
+            OrderList(isLoggedIn: $isLoggedIn, restaurant: $restaurant  ).tabItem {
                 Label("Orders", systemImage: "list.bullet")
             }.tag(Tab.orders)
             Text("Order History").tabItem {
@@ -31,16 +34,21 @@ struct UserOrderView: View {
             selectedTab == .history ? "Order History": "Profile")
         .toolbar{
             Button{
-                openNewOrder.toggle()
+                showLocationSelect.toggle()
             }label:{
                 Text("New Order")
             }.buttonStyle(.borderless)
             .animation(.easeInOut, value: selectedTab != .orders)
             .hiddenConditionally(isHidden: selectedTab != .orders)
             
-        }
-        .navigationDestination(isPresented: $openNewOrder){
-            PricingList(restaurantId: $restaurant.id)
+        }.navigationDestination(isPresented: $showLocationSelect){
+            LocationView(restaurantId: $restaurant.id, openNewOrder: $showLocationSelect, newOrderId: $newOrderId , showOrder: $showOrder)
+        }.navigationDestination(isPresented: $showOrder){
+            if newOrderId > 0{
+                OrderDetailView(orderId: newOrderId)
+            }else{
+                Text("Order Id Not Found")
+            }
         }
     }
 }

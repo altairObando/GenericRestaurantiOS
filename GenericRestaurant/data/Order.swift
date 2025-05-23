@@ -14,8 +14,8 @@ struct Order: Codable {
     var orderStatus, createdAt, updatedAt: String?
     var taxes, subtotal, total: String?
     var restaurant, location, waiter: Int?
-    var waiterName: String
-    var locationName: String
+    var waiterName: String?
+    var locationName: String?
 
     enum CodingKeys: String, CodingKey {
         case id
