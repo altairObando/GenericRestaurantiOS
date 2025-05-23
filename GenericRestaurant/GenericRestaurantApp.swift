@@ -49,3 +49,4 @@ func formatDate(_ isoString: String) -> String {
 
     return displayFormatter.string(from: date)
 }
+

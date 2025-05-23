@@ -12,6 +12,7 @@ struct UserOrderView: View {
     @Binding var isLoggedIn: Bool;
     @Binding var restaurant: Restaurant;
     enum Tab { case orders, history, settings }
+    @State private var orderStatus : OrderStatus = .ACTIVE
     @State private var selectedTab: Tab = .orders
     @State private var showLocationSelect: Bool = false
     @State private var showOrder: Bool = false;
@@ -19,11 +20,17 @@ struct UserOrderView: View {
     
     var body: some View {
         TabView(selection: $selectedTab ) {
-            OrderList(isLoggedIn: $isLoggedIn, restaurant: $restaurant  ).tabItem {
+            OrderList(
+                orderStatus: $orderStatus,
+                isLoggedIn: $isLoggedIn,
+                restaurant: $restaurant
+            )
+            .tabItem {
                 Label("Orders", systemImage: "list.bullet")
             }.tag(Tab.orders)
-            Text("Order History").tabItem {
-                Label("History", systemImage: "clock")
+            OrderHistory(isLoggedIn: $isLoggedIn, restaurant: $restaurant )
+            .tabItem {
+                Label("Order History", systemImage: "calendar.badge.clock")
             }.tag(Tab.history)
             Text("Profile").tabItem {
                 Label("Profile", systemImage: "person")

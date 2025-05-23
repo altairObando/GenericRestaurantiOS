@@ -7,6 +7,7 @@
 
 import SwiftUI
 struct OrderList: View {
+    @Binding var orderStatus: OrderStatus;
     @Binding var isLoggedIn: Bool;
     @Binding var restaurant: Restaurant;
     @State private var orders: [Order] = []
@@ -16,7 +17,11 @@ struct OrderList: View {
     var body: some View {
         VStack(alignment: .leading){
             if isLoading {
-                ProgressView("Loading orders...")
+                HStack{
+                    Spacer()
+                    ProgressView("Loading orders...")
+                    Spacer()
+                }
             } else if orders.isEmpty {
                 Text("No orders found.")
                     .foregroundColor(.gray)
@@ -48,10 +53,13 @@ struct OrderList: View {
                 fetchOrders()
             }
         }
+        .onChange(of: orderStatus) { oldStatus, newStatus in
+            fetchOrders()
+        }
     }
     func fetchOrders(){
         isLoading = true;
-        APIService.shared.getOrdersByStatus(restaurantId: restaurant.id, status: "ACTIVE" ){ result in
+        APIService.shared.getOrdersByStatus(restaurantId: restaurant.id, status: orderStatus.rawValue ){ result in
             switch result {
                 case .success(let paginated):
                     self.orders = paginated.results;
