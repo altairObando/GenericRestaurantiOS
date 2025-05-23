@@ -10,23 +10,27 @@ import Combine
 
 struct PricingList: View {
     @StateObject private var viewModel: PricingListViewModel
-
-    init(restaurantId: Int) {
+    var onSelect: ((Pricing) -> Void)? = nil
+    init(restaurantId: Int, onSelect: @escaping ((Pricing) -> Void)) {
         _viewModel = StateObject(wrappedValue: PricingListViewModel(restaurantId: restaurantId))
+        self.onSelect = onSelect
     }
-
     var body: some View {
         NavigationView {
             List {
                 ForEach(viewModel.pricing.indices, id: \.self) { index in
                     let price = viewModel.pricing[index]
-                    HStack {
-                        Label(price.productName, systemImage: "folder.badge.plus.fill")
-                        Spacer()
-                        Label(price.price, systemImage: "dollarsign")
+                    Button{
+                        self.onSelect?(price)
+                    } label:{
+                        HStack {
+                            Label(price.productName, systemImage: "folder.badge.plus.fill")
+                            Spacer()
+                            Label(price.price, systemImage: "dollarsign")
+                        }
+                        .font(.subheadline)
+                        .padding()
                     }
-                    .font(.subheadline)
-                    .padding()
                     .onAppear {
                         viewModel.fetchNextIfNeeded(currentIndex: index)
                     }
@@ -34,7 +38,11 @@ struct PricingList: View {
             }
 
             if viewModel.isFetching {
-                ProgressView("Searching Products")
+                HStack {
+                    Spacer()
+                    ProgressView("Searching Products")
+                    Spacer()
+                }
             }
         }
         .searchable(text: $viewModel.searchText, prompt: "Search Products")

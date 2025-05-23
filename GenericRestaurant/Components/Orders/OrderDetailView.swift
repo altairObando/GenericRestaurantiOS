@@ -9,19 +9,20 @@ import SwiftUI
 struct OrderDetailView: View {
     let orderId: Int
     @State private var isEditing: Bool = false;
-    @State private var order: Order?
+    @State private var order: Order = Order(id: 0)
     @State private var orderDetails: [OrderDetailsSet] = []
     @State private var selection: Set<Int> = []
     @State private var isLoading: Bool = true
     @State private var errMsg: String = String();
     @State private var isError: Bool = false
+    @State private var showAddItem: Bool = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             if isLoading{
                 ProgressView()
             }
-            if let order = order {
+            if order.id > 0 {
                 // Header
                 DetailHeader(orderId: orderId, orderStatus: order.orderStatus ?? "Unknown" )
                 Divider()
@@ -95,12 +96,25 @@ struct OrderDetailView: View {
                     }.animation(.easeInOut, value: isEditing)
                 }
                 ToolbarItem(placement: .navigationBarTrailing){
-                    Button("", systemImage: "plus"){}.animation(.easeInOut, value: isEditing)
+                    Button("", systemImage: "plus"){
+                        showAddItem.toggle()
+                    }.animation(.easeInOut, value: isEditing)
                 }
             }else{
                 ToolbarItem(placement: .navigationBarTrailing){
                     Button("Done"){ isEditing.toggle()}.animation(.easeInOut, value: isEditing)
                 }
+            }
+        }
+        .navigationDestination(isPresented: $showAddItem){
+            if order.id > 0 {
+                AddItemDetail(order: $order){ (result: Bool, message: String) in
+                    if result {
+                        showAddItem.toggle()
+                    }
+                }
+            }else{
+                Text("Please select an order")
             }
         }
     }

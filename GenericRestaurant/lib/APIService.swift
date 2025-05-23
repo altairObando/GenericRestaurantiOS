@@ -284,7 +284,15 @@ public class APIService {
         let jsonData = try JSONEncoder().encode(orderDto)
         let newOrder: Order = try await self.requestAsync(url: url, method: "POST", body: jsonData);
         return newOrder
-        
+    }
+    func addOrderDetail(_ orderId: Int, _ detail: OrderDetailsSet ) async throws -> OrderDetailsSet {
+        let url = self.apiURL
+            .appendingPathComponent("orders")
+            .appendingPathComponent(String(orderId))
+            .appendingPathComponent("add_detail/")
+        let jsonData = try JSONEncoder().encode(detail)
+        let newOrder: OrderDetailsSet = try await self.requestAsync(url: url, method: "POST", body: jsonData);
+        return newOrder
     }
     // MARK: - async Methods
     // MARK: - Versión async/await del método request
@@ -306,6 +314,9 @@ public class APIService {
 
         finalHeaders.forEach { key, value in
             request.setValue(value, forHTTPHeaderField: key)
+        }
+        if body != nil {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
         }
 
         let (data, response) = try await URLSession.shared.data(for: request)
