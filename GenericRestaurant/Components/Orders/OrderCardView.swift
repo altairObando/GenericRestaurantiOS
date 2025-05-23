@@ -57,7 +57,7 @@ struct OrderCardView: View {
     func statusColor(for status: String?) -> Color {
         switch status?.lowercased() {
             case "paid": return .green
-            case "pending": return .orange
+            case "delivered": return .orange
             case "active": return .yellow
             case "reserved": return .blue
             case "cancelled": return .red

@@ -40,13 +40,20 @@ struct UserOrderView: View {
             selectedTab == .orders  ? "My Orders" :
             selectedTab == .history ? "Order History": "Profile")
         .toolbar{
-            Button{
-                showLocationSelect.toggle()
-            }label:{
-                Text("New Order")
-            }.buttonStyle(.borderless)
-            .animation(.easeInOut, value: selectedTab != .orders)
-            .hiddenConditionally(isHidden: selectedTab != .orders)
+            ToolbarItem(placement: .topBarTrailing){
+                Button{
+                    showLocationSelect.toggle()
+                }label:{
+                    Text("New Order")
+                }.buttonStyle(.borderless)
+                .animation(.easeInOut, value: selectedTab != .orders)
+                .hiddenConditionally(isHidden: selectedTab != .orders)
+            }
+            ToolbarItem(placement: .topBarTrailing){
+                Button(String(), systemImage: "calendar.badge.clock"){
+                    print("Pick Date")
+                }.hiddenConditionally(isHidden: selectedTab != .history)
+            }
             
         }.navigationDestination(isPresented: $showLocationSelect){
             LocationView(restaurantId: $restaurant.id, openNewOrder: $showLocationSelect, newOrderId: $newOrderId , showOrder: $showOrder)

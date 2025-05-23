@@ -67,7 +67,7 @@ struct OrderDetailView: View {
                 }
                 .padding(.top)
                 // Options
-                if !isEditing{
+                if (!isEditing && order.orderStatus == OrderStatus.ACTIVE.rawValue || order.orderStatus == OrderStatus.RESERVED.rawValue ){
                     DetailOptions()
                 }
             }
@@ -88,7 +88,9 @@ struct OrderDetailView: View {
             getOrderDetails()
         }
         .toolbar{
-            if !isEditing {
+            if !isEditing && (
+                order.orderStatus == OrderStatus.ACTIVE.rawValue || order.orderStatus == OrderStatus.RESERVED.rawValue
+            ) {
                 // Botón de edición para habilitar selección múltiple
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button("", systemImage: "pencil"){
