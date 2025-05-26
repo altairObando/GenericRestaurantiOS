@@ -49,4 +49,9 @@ func formatDate(_ isoString: String) -> String {
 
     return displayFormatter.string(from: date)
 }
-
+func strNumberFormated(_ str: String?)->String{
+    if let str = str{
+        return  String(format: "%.2f", ( Float(str) ?? 0))
+    }
+    return "0.00"
+}

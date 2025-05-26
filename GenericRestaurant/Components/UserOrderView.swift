@@ -22,6 +22,7 @@ struct UserOrderView: View {
         TabView(selection: $selectedTab ) {
             OrderList(
                 orderStatus: $orderStatus,
+                orderDate: .constant(Date()),
                 isLoggedIn: $isLoggedIn,
                 restaurant: $restaurant
             )
@@ -48,13 +49,7 @@ struct UserOrderView: View {
                 }.buttonStyle(.borderless)
                 .animation(.easeInOut, value: selectedTab != .orders)
                 .hiddenConditionally(isHidden: selectedTab != .orders)
-            }
-            ToolbarItem(placement: .topBarTrailing){
-                Button(String(), systemImage: "calendar.badge.clock"){
-                    print("Pick Date")
-                }.hiddenConditionally(isHidden: selectedTab != .history)
-            }
-            
+            }            
         }.navigationDestination(isPresented: $showLocationSelect){
             LocationView(restaurantId: $restaurant.id, openNewOrder: $showLocationSelect, newOrderId: $newOrderId , showOrder: $showOrder)
         }.navigationDestination(isPresented: $showOrder){

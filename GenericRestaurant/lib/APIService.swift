@@ -244,15 +244,17 @@ public class APIService {
             }
         }
     }
-    func getOrdersByStatus(restaurantId: Int, status: String = "ACTIVE", completion: @escaping(Result<PaginatedResult<[Order]>, Error>) -> Void){
+    func getOrdersByStatus(restaurantId: Int, status: String = "ACTIVE", date: String = String(), completion: @escaping(Result<PaginatedResult<[Order]>, Error>) -> Void){
         var url = self.apiURL.appendingPathComponent("orders/by_status/");
-        url
-            .append(
+        url.append(
                 queryItems: [
                     URLQueryItem(name: "restaurantId", value: String(restaurantId)),
                     URLQueryItem(name: "status", value: status.uppercased())
                 ]
-            )
+        )
+        if !date.isEmpty {
+            url.append(queryItems: [URLQueryItem(name: "date", value: date)])
+        }
         self.request(url: url){ (result: Result<PaginatedResult<[Order]>, Error>) in
             switch result {
                 case .success(let orders):

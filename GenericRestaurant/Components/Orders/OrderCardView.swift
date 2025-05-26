@@ -33,8 +33,8 @@ struct OrderCardView: View {
 
             HStack {
                 VStack(alignment: .leading) {
-                    Text("Subtotal: $\((Float(order.subtotal ?? "") ?? 0).formatted())")
-                    Text("Taxes: $\((Float(order.taxes ?? "") ?? 0).formatted())")
+                    Text("Subtotal: $\(strNumberFormated(order.subtotal))")
+                    Text("Taxes: $\(strNumberFormated(order.taxes))")
                         .foregroundColor(.gray)
                 }
                 Spacer()
@@ -42,7 +42,7 @@ struct OrderCardView: View {
                     Text("Total:")
                         .font(.caption)
                         .foregroundColor(.gray)
-                    Text("$\((Float(order.total ?? "") ?? 0).formatted())")
+                    Text("$\( strNumberFormated(order.total))")
                         .font(.headline)
                 }
             }
@@ -64,4 +64,5 @@ struct OrderCardView: View {
             default: return .gray
         }
     }
+    
 }

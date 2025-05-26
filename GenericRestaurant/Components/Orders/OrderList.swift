@@ -8,6 +8,7 @@
 import SwiftUI
 struct OrderList: View {
     @Binding var orderStatus: OrderStatus;
+    @Binding var orderDate: Date;
     @Binding var isLoggedIn: Bool;
     @Binding var restaurant: Restaurant;
     @State private var orders: [Order] = []
@@ -34,11 +35,11 @@ struct OrderList: View {
                             let order = orders[index]
                             NavigationLink(destination: OrderDetailView(orderId: order.id)){
                                 OrderCardView(order: order)
-                                .onAppear{
-                                    if index == orders.count - 1 {
-                                        fetchMoreOrders()
+                                    .onAppear{
+                                        if index == orders.count - 1 {
+                                            fetchMoreOrders()
+                                        }
                                     }
-                                }
                             }.buttonStyle(PlainButtonStyle())
                         }
                     }.padding()
@@ -53,22 +54,30 @@ struct OrderList: View {
                 fetchOrders()
             }
         }
-        .onChange(of: orderStatus) { oldStatus, newStatus in
+        .onChange(of: orderStatus) { _, _ in
+            fetchOrders()
+        }
+        .onChange(of: orderDate){ _, _ in
             fetchOrders()
         }
     }
     func fetchOrders(){
         isLoading = true;
-        APIService.shared.getOrdersByStatus(restaurantId: restaurant.id, status: orderStatus.rawValue ){ result in
-            switch result {
-                case .success(let paginated):
-                    self.orders = paginated.results;
-                    self.nextOrderUrl = paginated.next;
-                case .failure:
-                    print("Error fetching orders")
+        APIService.shared
+            .getOrdersByStatus(
+                restaurantId: restaurant.id,
+                status: orderStatus.rawValue,
+                date: formatDate()
+            ){ result in
+                switch result {
+                    case .success(let paginated):
+                        self.orders = paginated.results;
+                        self.nextOrderUrl = paginated.next;
+                    case .failure:
+                        print("Error fetching orders")
+                }
+                isLoading = false;
             }
-            isLoading = false;
-        }
     }
     func fetchMoreOrders(){
         Task{
@@ -82,5 +91,11 @@ struct OrderList: View {
             self.orders.append(contentsOf: response.results);
             isLoading.toggle()
         }
+    }
+    func formatDate() -> String{
+        let formatter = DateFormatter();
+        formatter.dateFormat = "yyyy'-'MM'-'dd";
+        let f: String = formatter.string(from: orderDate)
+        return f
     }
 }
