@@ -403,6 +403,30 @@ public class APIService {
         let response: [Location] = try await self.requestAsync(url: url);
         return response
     }
+    // MARK: - Payments
+    func getSplitPayments(orderId: Int) async throws -> [SplitPayment] {
+        var url = self.apiURL.appendingPathComponent("split-payments/");
+        url.append(queryItems: [URLQueryItem(name: "orderId", value: String(orderId))])
+        let response: PaginatedResult<[SplitPayment]> = try await self.requestAsync(url: url);
+        return response.results
+    }
+    func addSplitPayment(orderId: Int, payment: SplitPayment) async throws -> SplitPayment {
+        let url = self.apiURL.appendingPathComponent("split-payments/");
+        let jsonData = try JSONEncoder().encode(payment);
+        let response: SplitPayment = try await self.requestAsync(url: url, method:"POST", body: jsonData);
+        return response;
+    }
+    func getPaymentMethods(completion: @escaping(Result<[PaymentMethod], Error>) -> Void){
+        let url = self.apiURL.appendingPathComponent("payment-methods/");
+        self.request(url: url){ (result: Result<PaginatedResult<[PaymentMethod]>, Error>) in
+            switch result {
+                case .success(let methods):
+                    completion(.success(methods.results))
+                case .failure(let error):
+                    completion(.failure(error))
+            }
+        }
+    }
 }
 
 // MARK: - Errores comunes

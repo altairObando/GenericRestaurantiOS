@@ -16,6 +16,7 @@ struct OrderDetailView: View {
     @State private var errMsg: String = String();
     @State private var isError: Bool = false
     @State private var showAddItem: Bool = false
+    @State private var showPayments = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
@@ -68,7 +69,7 @@ struct OrderDetailView: View {
                 .padding(.top)
                 // Options
                 if (!isEditing && order.orderStatus == OrderStatus.ACTIVE.rawValue || order.orderStatus == OrderStatus.RESERVED.rawValue ){
-                    DetailOptions()
+                    DetailOptions(showPayments: $showPayments)
                 }
             }
         }
@@ -86,6 +87,9 @@ struct OrderDetailView: View {
         }
         .refreshable {
             getOrderDetails()
+        }
+        .navigationDestination(isPresented: $showPayments) {
+            OrderPaymentsView(orderId: orderId)
         }
         .toolbar{
             if !isEditing && (

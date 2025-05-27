@@ -8,6 +8,7 @@
 import SwiftUI
 
 struct DetailOptions: View {
+    @Binding var showPayments: Bool;
     var body: some View {
         HStack(spacing: 16){
             Button{
@@ -18,7 +19,7 @@ struct DetailOptions: View {
                 .tint(Color.red)
                 .clipShape(RoundedRectangle(cornerRadius: 10))
             Button{
-                print("Pay")
+                showPayments = true;
             } label:{
                 FullWidthText(text: "PAY")
             }.buttonStyle(.borderedProminent)
